@@ -83,14 +83,27 @@ def inner_exact(t, task_set, dt):
 def generate_schedule(task_set):
     sorted_set = sorted(task_set, key=lambda i: i['p'])
     lcms = lcm(task_set)
-    fluid_set = task_set
+    #fluid_set = task_set
     flow = []
     for t in range(lcms):
-        tn = priority(fluid_set)
+        tn = priority(sorted_set, t)
 
-        test = next(task for task in fluid_set if task["name"] == tn)
-        flow.append({"name": tn, "start": [t], "end": [t + 1]})
-        print("here")
+        #test = next(task for task in sorted_set if task["name"] == tn)
+        if tn in '':
+            print("IDLE")
+        else:
+            task = next(task for task in sorted_set if task["name"] == tn)
+            task['c'] -= 1
+            if task['c'] == 0:
+                sorted_set.pop(0)
+                nextiter = next(task for task in task_set if task["name"] == tn)
+                #nextiter['p'] = nextiter['p']*2
+                nextiter['i'] += 1
+                sorted_set.append(nextiter)
+            flow.append({"name": tn})  # , "start": t, "end": t + 1
+        print(tn)
+
+    print("here")
     ###
     """
     fig, gnt = plot.subplots()
@@ -100,13 +113,18 @@ def generate_schedule(task_set):
     """
 
 
-def priority(task_set):
+def priority(task_set, t):
     tmpP = 999
     active_task = ""
     for task in task_set:
-        if task['p'] * task['i'] < tmpP:
-            tmpP = task['p']
-            active_task = task['name']
+        if task['i'] == 1:
+            if task['p'] * task['i'] < tmpP:
+                tmpP = task['p']
+                active_task = task['name']
+        else:
+            if task['p'] * task['i'] < tmpP and task['i'] * task['p'] <= t:
+                tmpP = task['p']
+                active_task = task['name']
 
     return active_task
 
