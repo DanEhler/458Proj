@@ -1,25 +1,28 @@
 import math
 from math import gcd
-
+import copy
 # import matplotlib.pyplot as plot
 # Will be from task parser: i is iteration
 set1 = {
     "name": "t0",
     "c": 1,
     "p": 8,
-    "i": 1
+    "i": 0,
+    "active": False
 }
 set2 = {
     "name": "t1",
     "c": 2,
     "p": 6,
-    "i": 1
+    "i": 0,
+    "active": False
 }
 set3 = {
     "name": "t2",
     "c": 4,
     "p": 24,
-    "i": 1
+    "i": 0,
+    "active": False
 }
 task_set = [set1, set2, set3]
 
@@ -81,8 +84,12 @@ def inner_exact(t, task_set, dt):
 
 
 def generate_schedule(task_set):
-    sorted_set = sorted(task_set, key=lambda i: i['p'])
     lcms = lcm(task_set)
+
+    sorted_set = copy.deepcopy(sorted(task_set, key=lambda i: i['p']))
+    for task in sorted_set:  # Initialize p for first instance in same order
+        task['p'] = 0
+
     #fluid_set = task_set
     flow = []
     for t in range(lcms):
@@ -95,10 +102,14 @@ def generate_schedule(task_set):
             task = next(task for task in sorted_set if task["name"] == tn)
             task['c'] -= 1
             if task['c'] == 0:
-                sorted_set.pop(0)
-                nextiter = next(task for task in task_set if task["name"] == tn)
-                #nextiter['p'] = nextiter['p']*2
-                nextiter['i'] += 1
+                tmp = next(task for task in sorted_set if task["name"] == tn)
+                i = tmp['i']
+                sorted_set.remove(next(task for task in sorted_set if task["name"] == tn))
+                nextiter = next(task for task in copy.deepcopy(task_set) if task["name"] == tn)
+
+                nextiter['i'] = i + 1
+                nextiter['p'] = nextiter['p']*nextiter['i']
+                nextiter["active"] = False
                 sorted_set.append(nextiter)
             flow.append({"name": tn})  # , "start": t, "end": t + 1
         print(tn)
@@ -113,18 +124,22 @@ def generate_schedule(task_set):
     """
 
 
-def priority(task_set, t):
+def priority(task_sets, t):
     tmpP = 999
     active_task = ""
-    for task in task_set:
-        if task['i'] == 1:
-            if task['p'] * task['i'] < tmpP:
-                tmpP = task['p']
-                active_task = task['name']
-        else:
-            if task['p'] * task['i'] < tmpP and task['i'] * task['p'] <= t:
-                tmpP = task['p']
-                active_task = task['name']
+    for task in task_sets:
+        if task['p'] == t:
+            active_task = task['name']
+            task["active"] = True
+            return active_task
+        elif task['p'] < tmpP or task['p'] == t or task["active"] is True:
+            tmpP = task['p']
+            #task["active"] = True
+            active_task = task['name']
+
+    if active_task != '':
+        task = next(task for task in task_sets if task["name"] == active_task)
+        task["active"] = True
 
     return active_task
 
