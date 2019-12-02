@@ -1,30 +1,33 @@
 import math
 from math import gcd
 import copy
+
 # import matplotlib.pyplot as plot
 # Will be from task parser: i is iteration
-set1 = {
+"""
+task_set = {0: {
     "name": "t0",
     "c": 1,
     "p": 8,
     "i": 0,
     "active": False
-}
-set2 = {
-    "name": "t1",
-    "c": 2,
-    "p": 6,
-    "i": 0,
-    "active": False
-}
-set3 = {
-    "name": "t2",
-    "c": 4,
-    "p": 24,
-    "i": 0,
-    "active": False
-}
-task_set = [set1, set2, set3]
+},
+    1: {
+        "name": "t1",
+        "c": 2,
+        "p": 6,
+        "i": 0,
+        "active": False
+    },
+    2: {
+        "name": "t2",
+        "c": 4,
+        "p": 24,
+        "i": 0,
+        "active": False
+    }}
+#task_set = [set1, set2, set3]
+"""
 
 
 def rms(task_set):
@@ -41,9 +44,15 @@ def rms(task_set):
 
 def rms_utilization(task_set):  # Sufficient, but not necessary
     total = 0
+    i = 0
     n = len(task_set)
-    for task in task_set:
-        total += task['c'] / task['p']
+    C = []
+    P = []
+    for i in range(n):
+        C.append(int(task_set[i]['c']))
+        P.append(int(task_set[i]['p']))
+        total += C[i] / P[i]
+        # i+=1
     exp = 2 ** float(1 / n)
     comp = float((n * (exp - 1)))
     if total <= comp:
@@ -86,16 +95,17 @@ def inner_exact(t, task_set, dt):
 def generate_schedule(task_set):
     lcms = lcm(task_set)
 
-    sorted_set = copy.deepcopy(sorted(task_set, key=lambda i: i['p']))
-    for task in sorted_set:  # Initialize p for first instance in same order
-        task['p'] = 0
+    sorted_set = copy.deepcopy(
+        sorted(task_set.items(), key=lambda j: j[1]['p']))  # sorted(task_set, key=lambda i: i['p'])
+    for i in sorted_set:  # Initialize p for first instance in same order
+        i['p'] = 0
 
-    #fluid_set = task_set
+    # fluid_set = task_set
     flow = []
     for t in range(lcms):
         tn = priority(sorted_set, t)
 
-        #test = next(task for task in sorted_set if task["name"] == tn)
+        # test = next(task for task in sorted_set if task["name"] == tn)
         if tn in '':
             print("IDLE")
         else:
@@ -108,7 +118,7 @@ def generate_schedule(task_set):
                 nextiter = next(task for task in copy.deepcopy(task_set) if task["name"] == tn)
 
                 nextiter['i'] = i + 1
-                nextiter['p'] = nextiter['p']*nextiter['i']
+                nextiter['p'] = nextiter['p'] * nextiter['i']
                 nextiter["active"] = False
                 sorted_set.append(nextiter)
             flow.append({"name": tn})  # , "start": t, "end": t + 1
@@ -128,6 +138,7 @@ def priority(task_sets, t):
     tmpP = 999
     active_task = ""
     for task in task_sets:
+        """""
         if task['p'] == t:
             active_task = task['name']
             task["active"] = True
@@ -136,6 +147,17 @@ def priority(task_sets, t):
             tmpP = task['p']
             #task["active"] = True
             active_task = task['name']
+        """
+
+        if task['p'] == t:
+            active_task = task['name']
+            task["active"] = True
+            return active_task
+        else:
+            for tasks in task_sets:
+                if tasks['p'] == 0 and tasks['p'] < tmpP:
+                    tmpP = task['p']
+                    active_task = tasks['name']
 
     if active_task != '':
         task = next(task for task in task_sets if task["name"] == active_task)
@@ -145,12 +167,14 @@ def priority(task_sets, t):
 
 
 def lcm(list_period):
-    lcm = list_period[0]['p']
-    for i in list_period[1:]:
-        i = i['p']
+    tmp = []
+    for i in range(len(list_period)):
+        tmp.append(list_period[i]['p'])
+    lcm = tmp[0]
+    for i in tmp[1:]:
+        # i = i['p']
         lcm = lcm * i // gcd(lcm, i)
     return lcm
 
-
-if __name__ == "__main__":
-    rms(task_set)
+# if __name__ == "__main__":
+#    rms(task_set)
