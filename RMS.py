@@ -98,6 +98,7 @@ def generate_schedule(task_set):
         #test = next(task for task in sorted_set if task["name"] == tn)
         if tn in '':
             print("IDLE")
+            continue
         else:
             task = next(task for task in sorted_set if task["name"] == tn)
             task['c'] -= 1
@@ -132,7 +133,9 @@ def priority(task_sets, t):
             active_task = task['name']
             task["active"] = True
             return active_task
-        elif task['p'] < tmpP or task['p'] == t or task["active"] is True:
+        elif (task['p'] < tmpP and task['p'] == t) or (task["active"] is True or task['p'] == 0):
+            if task["active"] is True and not next(task for task in task_sets if task['p'] == t) in task_sets:
+                return task["name"]
             tmpP = task['p']
             #task["active"] = True
             active_task = task['name']
