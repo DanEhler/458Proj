@@ -1,36 +1,58 @@
 import math
 from math import gcd
 import copy
+
 # import matplotlib.pyplot as plot
 # Will be from task parser: i is iteration
-set1 = {
-    "name": "t0",
-    "c": 1,
-    "p": 8,
-    "i": 0,
-    "active": False
+# set1 = {
+#     "name": "t0",
+#     "c": 1,
+#     "p": 8,
+#     "i": 0,
+#     "active": False
+# }
+# set2 = {
+#     "name": "t1",
+#     "c": 2,
+#     "p": 6,
+#     "i": 0,
+#     "active": False
+# }
+# set3 = {
+#     "name": "t2",
+#     "c": 4,
+#     "p": 24,
+#     "i": 0,
+#     "active": False
+# }
+# task_set = [set1, set2, set3]
+
+task_set = {
+
+    0: {"name": "t0",
+        "c": 1,
+        "p": 8,
+        "i": 0,
+        "active": False},
+    1: {"name": "t1",
+        "c": 2,
+        "p": 6,
+        "i": 0,
+        "active": False},
+    2: {"name": "t2",
+        "c": 4,
+        "p": 24,
+        "i": 0,
+        "active": False}
 }
-set2 = {
-    "name": "t1",
-    "c": 2,
-    "p": 6,
-    "i": 0,
-    "active": False
-}
-set3 = {
-    "name": "t2",
-    "c": 4,
-    "p": 24,
-    "i": 0,
-    "active": False
-}
-task_set = [set1, set2, set3]
 
 
 def rms(task_set):
     if rms_utilization(task_set) is True:
         print("Schedulable under utilization test")
+        exact_analysis(task_set)
         generate_schedule(task_set)
+
     else:
         print("Not schedulable under utilization test")
         if exact_analysis(task_set) is True:
@@ -42,8 +64,8 @@ def rms(task_set):
 def rms_utilization(task_set):  # Sufficient, but not necessary
     total = 0
     n = len(task_set)
-    for task in task_set:
-        total += task['c'] / task['p']
+    for i in task_set.keys():
+        total += task_set[i]['c'] / task_set[i]['p']
     exp = 2 ** float(1 / n)
     comp = float((n * (exp - 1)))
     if total <= comp:
@@ -52,28 +74,31 @@ def rms_utilization(task_set):  # Sufficient, but not necessary
 
 
 def exact_analysis(task_set):
-    task_set = sorted(task_set, key=lambda i: i['p'], reverse=True)  # sort by period
-    for task in task_set:
-        dt = task['p']
-        to = sum(task['c'] for task in task_set)
-        if inner_exact(to, task_set, dt) is False:
+    sort_set = sorted(task_set.items(), key=lambda i: i[1]['p'], reverse=True)  # sort by period
+    sort_set = dict(sort_set)
+    for i in task_set.keys():
+        dt = sort_set[i]['p']
+        # to = sum(sort_set[i]['c'] for task in sort_set)
+        to = sum(d['c'] for d in sort_set.values() if d)
+        if inner_exact(to, sort_set, dt) is False:
             return False
         else:
-            task_set.pop(0)
+            sort_set.pop(i)
     # Work around for last entry
-    dt = task['p']
-    to = sum(task['c'] for task in task_set)
-    if inner_exact(to, task_set, dt) is False:
-        return False
-    else:
+    # dt = sort_set[i]['p']
+    # # to = sum(task['c'] for task in task_set)
+    # to = sum(d['c'] for d in sort_set.values() if d)
+    # if inner_exact(to, task_set, dt) is False:
+    #     return False
+    # else:
         return True
 
 
 # recursive method to get exact analysis
 def inner_exact(t, task_set, dt):
     total = 0
-    for task in task_set:
-        total += task['c'] * math.ceil(t / task['p'])
+    for i in task_set:
+        total += task_set[i]['c'] * math.ceil(t / task_set[i]['p'])
     if total is t:
         if t <= dt:
             return True
@@ -83,76 +108,35 @@ def inner_exact(t, task_set, dt):
         inner_exact(total, task_set, dt)
 
 
+# sorted_set = copy.deepcopy(sorted(task_set, key=lambda i: i['p']))
+original_set = copy.deepcopy(task_set)
+
 def generate_schedule(task_set):
     lcms = lcm(task_set)
+    for i in range(lcms):
+        print(priority(task_set))
+    return
 
-    sorted_set = copy.deepcopy(sorted(task_set, key=lambda i: i['p']))
-    for task in sorted_set:  # Initialize p for first instance in same order
-        task['p'] = 0
+def priority(set):
+    temp = 9999
+    active = -1
+    for i in task_set.keys():
+        if(set[i]['c'] !=0):
+            if(temp > set[i]['p'] or temp > original_set[i]['p']):
+                temp = set[i]['p']
+                active = set[i]['name']
 
-    #fluid_set = task_set
-    flow = []
-    for t in range(lcms):
-        tn = priority(sorted_set, t)
-
-        #test = next(task for task in sorted_set if task["name"] == tn)
-        if tn in '':
-            print("IDLE")
-            continue
-        else:
-            task = next(task for task in sorted_set if task["name"] == tn)
-            task['c'] -= 1
-            if task['c'] == 0:
-                tmp = next(task for task in sorted_set if task["name"] == tn)
-                i = tmp['i']
-                sorted_set.remove(next(task for task in sorted_set if task["name"] == tn))
-                nextiter = next(task for task in copy.deepcopy(task_set) if task["name"] == tn)
-
-                nextiter['i'] = i + 1
-                nextiter['p'] = nextiter['p']*nextiter['i']
-                nextiter["active"] = False
-                sorted_set.append(nextiter)
-            flow.append({"name": tn})  # , "start": t, "end": t + 1
-        print(tn)
-
-    print("here")
-    ###
-    """
-    fig, gnt = plot.subplots()
-    gnt.set_xlim(0, lcms)
-    gnt.set_ylim(0, len(task_set))
-    plot.show()
-    """
-
-
-def priority(task_sets, t):
-    tmpP = 999
-    active_task = ""
-    for task in task_sets:
-        if task['p'] == t:
-            active_task = task['name']
-            task["active"] = True
-            return active_task
-        elif (task['p'] < tmpP and task['p'] == t) or (task["active"] is True or task['p'] == 0):
-            if task["active"] is True and not next(task for task in task_sets if task['p'] == t) in task_sets:
-                return task["name"]
-            tmpP = task['p']
-            #task["active"] = True
-            active_task = task['name']
-
-    if active_task != '':
-        task = next(task for task in task_sets if task["name"] == active_task)
-        task["active"] = True
-
-    return active_task
-
+    return active
 
 def lcm(list_period):
-    lcm = list_period[0]['p']
-    for i in list_period[1:]:
-        i = i['p']
-        lcm = lcm * i // gcd(lcm, i)
-    return lcm
+    # lcm = list_period[0]['p']
+    tmp = []
+    for i in range(len(list_period)):
+        tmp.append(list_period[i]['p'])
+        lcms = list_period[0]['p']
+    for i in tmp[1:]:
+        lcms = lcms * i // gcd(lcms, i)
+    return lcms
 
 
 if __name__ == "__main__":
