@@ -84,13 +84,13 @@ def exact_analysis(task_set):
             return False
         else:
             sort_set.pop(i)
-    # Work around for last entry
-    # dt = sort_set[i]['p']
-    # # to = sum(task['c'] for task in task_set)
-    # to = sum(d['c'] for d in sort_set.values() if d)
-    # if inner_exact(to, task_set, dt) is False:
-    #     return False
-    # else:
+        # Work around for last entry
+        # dt = sort_set[i]['p']
+        # # to = sum(task['c'] for task in task_set)
+        # to = sum(d['c'] for d in sort_set.values() if d)
+        # if inner_exact(to, task_set, dt) is False:
+        #     return False
+        # else:
         return True
 
 
@@ -111,22 +111,35 @@ def inner_exact(t, task_set, dt):
 # sorted_set = copy.deepcopy(sorted(task_set, key=lambda i: i['p']))
 original_set = copy.deepcopy(task_set)
 
+
 def generate_schedule(task_set):
     lcms = lcm(task_set)
     for i in range(lcms):
-        print(priority(task_set))
+        result = priority(task_set)
+        if (result != -1):
+            task_set[result]['c'] -= 1
+            print(task_set[result]['name'])
+        else:
+            print("IDLE")
+
+        for i in task_set.keys():
+            task_set[i]['p'] -= 1
+            if (task_set[i]['p'] == 0):
+                task_set[i] = copy.deepcopy(original_set[i])
     return
 
+
 def priority(set):
-    temp = 9999
+    temp = 9999999
     active = -1
     for i in task_set.keys():
-        if(set[i]['c'] !=0):
-            if(temp > set[i]['p'] or temp > original_set[i]['p']):
+        if (set[i]['c'] != 0):
+            if (temp > set[i]['p'] or temp > original_set[i]['p']):
                 temp = set[i]['p']
-                active = set[i]['name']
+                active = i
 
     return active
+
 
 def lcm(list_period):
     # lcm = list_period[0]['p']
