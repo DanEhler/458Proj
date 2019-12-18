@@ -32,18 +32,15 @@ task_set = {
     0: {"name": "t0",
         "c": 1,
         "p": 8,
-        "i": 0,
-        "active": False},
+        },
     1: {"name": "t1",
         "c": 2,
         "p": 6,
-        "i": 0,
-        "active": False},
+       },
     2: {"name": "t2",
         "c": 4,
         "p": 24,
-        "i": 0,
-        "active": False}
+        }
 }
 
 
