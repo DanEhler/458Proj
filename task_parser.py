@@ -1,7 +1,8 @@
 from RMS import RMSalg
+from EDF import EDFalgo
 
 
-def read(list):
+def read(list, rms, edf, GUIInstance):
     tasks = dict()
     # tasks = {0: {
     #     "name": "t0",
@@ -31,16 +32,18 @@ def read(list):
     for i in taskList:
         if (count % 2) == 0:
             tasks[taski] = {}
-            tasks[taski]["name"] = "t"+str(taski)
+            tasks[taski]["name"] = "t" + str(taski)
             tasks[taski]['c'] = int(i)
         else:
-            tasks[(taski)]['p'] = int(i)
+            tasks[taski]['p'] = int(i)
             taski += 1
         count += 1
-
-    startRMS = RMSalg(tasks)
-    startRMS.rms()
-
+    if rms == 1:
+        startRMS = RMSalg(tasks, GUIInstance)
+        startRMS.rms()
+    if edf == 1:
+        startEDF = EDFalgo(tasks, GUIInstance)
+        startEDF.edf()
 
 # if __name__ == "__main__":
 #     read()

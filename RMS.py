@@ -2,32 +2,6 @@ import math
 from math import gcd
 import copy
 
-
-# import matplotlib.pyplot as plot
-# Will be from task parser: i is iteration
-# set1 = {
-#     "name": "t0",
-#     "c": 1,
-#     "p": 8,
-#     "i": 0,
-#     "active": False
-# }
-# set2 = {
-#     "name": "t1",
-#     "c": 2,
-#     "p": 6,
-#     "i": 0,
-#     "active": False
-# }
-# set3 = {
-#     "name": "t2",
-#     "c": 4,
-#     "p": 24,
-#     "i": 0,
-#     "active": False
-# }
-# task_set = [set1, set2, set3]
-
 # task_set = {
 #
 #     0: {"name": "t0",
@@ -43,21 +17,26 @@ import copy
 #         "p": 24,
 #         }
 # }
+
+
 class RMSalg:
 
     def rms(self):
         if self.rms_utilization() is True:
             print("Schedulable under utilization test")
-            self.exact_analysis()
+            self.instance.output("Schedulable under utilization test")
             self.generate_schedule(self.task_set)
 
         else:
             print("Not schedulable under utilization test")
+            self.instance.output("Not schedulable under utilization test")
             if self.exact_analysis() is True:
                 print("Schedulable under exact analysis")
+                self.instance.output("Schedulable under exact analysis")
+                self.generate_schedule(self.task_set)
             else:
                 print("Not schedulable under exact analysis")
-
+                self.instance.output("Not schedulable under exact analysis")
     def rms_utilization(self):  # Sufficient, but not necessary
         total = 0
         n = len(self.task_set)
@@ -106,26 +85,32 @@ class RMSalg:
 
     def generate_schedule(self, task_set):
         lcms = self.lcm()
+        out = []
         for i in range(lcms):
             result = self.priority(task_set)
-            if (result != -1):
+            if result != -1:
                 task_set[result]['c'] -= 1
                 print(task_set[result]['name'])
+                out.append(task_set[result]['name'])
+                # self.instance.output(task_set[result]['name'])
             else:
                 print("IDLE")
+                # self.instance.output("IDLE")
+                out.append("IDLE")
 
-            for i in task_set.keys():
-                task_set[i]['p'] -= 1
-                if (task_set[i]['p'] == 0):
-                    task_set[i] = copy.deepcopy(self.original_set[i])
+            for j in task_set.keys():
+                task_set[j]['p'] -= 1
+                if task_set[j]['p'] == 0:
+                    task_set[j] = copy.deepcopy(self.original_set[j])
+        self.instance.output(out)
         return
 
     def priority(self, set):
         temp = 9999999
         active = -1
         for i in self.task_set.keys():
-            if (set[i]['c'] != 0):
-                if (temp > set[i]['p'] or temp > self.original_set[i]['p']):
+            if set[i]['c'] != 0:
+                if temp > set[i]['p'] or temp > self.original_set[i]['p']:
                     temp = set[i]['p']
                     active = i
 
@@ -141,9 +126,10 @@ class RMSalg:
             lcms = lcms * i // gcd(lcms, i)
         return lcms
 
-    def __init__(self, task_set):
+    def __init__(self, task_set, instance):
         self.task_set = task_set
         self.original_set = copy.deepcopy(task_set)
+        self.instance = instance
 
     # if __name__ == "__main__":
     #     rms(task_set)
