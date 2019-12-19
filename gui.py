@@ -1,20 +1,57 @@
-import tkinter as UI
+from tkinter import *
+import task_parser
 
-def test():
-    top = UI.Tk()
-    sTitle = UI.Label(top, text="Enter Number of tasks")
-    num = UI.Entry(top, bd=5)
+class GUI(Frame):
 
-    # Packing
-    sTitle.pack()
-    num.pack()
-    ##
+    def createWidgets(self):
+        # top = Tk()
+        # sTitle = Label(top, text="Enter Number of tasks")
+        # num = Entry(top, bd=5)
+        #
+        # # Packing
+        # sTitle.pack()
+        # num.pack()
+        # ##
+        #
+        # ##
+        # top.mainloop()
+        #
+        # numT = num.get()
+        # print(numT)
+        ####
 
-    ##
-    top.mainloop()
+        self.num = Entry(self, bd=5, textvariable=self.v)
+        self.tasklist = Entry(self, bd=5, textvariable=self.va)
+        ####
+        self.button = Button(self, text="Enter", command=self.callback)
+        self.sTitle = Label(self, text="Number of Tasks")
+        self.lTitle = Label(self, text="Enter tasks as a list (c0,p0,c1,p1...)")
+        # Packing
+        self.sTitle.pack()
+        self.num.pack()
+        self.lTitle.pack()
+        self.tasklist.pack()
+        self.button.pack()
 
-    numT = num.get()
-    print(numT)
-if __name__ == "__main__":
-    test()
+    def callback(self):
+        self.v.get()
+        self.va.get()
+        print(self.v.get())
+        print(self.va.get())
+        task_parser.read(self.va.get())
 
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.v = StringVar()
+        self.va = StringVar()
+        self.pack()
+        self.createWidgets()
+
+
+
+root = Tk()
+app = GUI(master=root)
+app.mainloop()
+root.destroy()
+# if __name__ == "__main__":
+#     test()
